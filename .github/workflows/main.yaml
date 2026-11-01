@@ -11,10 +11,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build y levantar front
-        run: |
-          docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" build --no-cache front
-          docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" up -d front
-
-      - name: Verificar contenedor
-        run: docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" ps front
+      - name: Sync al volumen compartido
+        run: rsync -a --delete "${GITHUB_WORKSPACE}/" "${COMPOSE_PROJECT_PATH}/src/front/"
