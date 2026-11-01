@@ -6,10 +6,24 @@ on:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: [self-hosted, linux, docker, front]
     steps:
-      - name: Checkout code
+      - name: Checkout main (commit del push)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
+
+      - name: Confirmar ref
+        run: |
+          echo "GITHUB_REF=${{ github.ref }}"
+          git log -1 --oneline
 
       - name: Sync al volumen compartido
-        run: rsync -a --delete "${GITHUB_WORKSPACE}/" "${COMPOSE_PROJECT_PATH}/src/front/"
+        run: |
+          mkdir -p "${COMPOSE_PROJECT_PATH}/build/front"
+          rsync -a --delete \
+            --exclude '.github' \
+            --exclude '.git' \
+            "${GITHUB_WORKSPACE}/" "${COMPOSE_PROJECT_PATH}/build/front/"
