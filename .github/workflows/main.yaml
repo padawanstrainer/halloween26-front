@@ -23,7 +23,8 @@ jobs:
       - name: Sync al volumen compartido
         run: |
           mkdir -p "${COMPOSE_PROJECT_PATH}/build/front"
-          rsync -a --delete \
+          rsync -rltD --delete \
+            --no-owner --no-group --no-perms \
             --exclude '.github' \
             --exclude '.git' \
             "${GITHUB_WORKSPACE}/" "${COMPOSE_PROJECT_PATH}/build/front/"
