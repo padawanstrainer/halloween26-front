@@ -6,15 +6,24 @@ on:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: [self-hosted, linux, docker, front]
     steps:
-      - name: Checkout code
+      - name: Checkout main (commit del push)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          clean: true
 
-      - name: Build y levantar front
+      - name: Confirmar ref
         run: |
-          docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" build --no-cache front
-          docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" up -d front
+          echo "GITHUB_REF=${{ github.ref }}"
+          git log -1 --oneline
 
-      - name: Verificar contenedor
-        run: docker compose -f "${COMPOSE_PROJECT_PATH}/dockers/compose.yaml" ps front
+      - name: Sync al volumen compartido
+        run: |
+          mkdir -p "${COMPOSE_PROJECT_PATH}/build/front"
+          rsync -a --delete \
+            --exclude '.github' \
+            --exclude '.git' \
+            "${GITHUB_WORKSPACE}/" "${COMPOSE_PROJECT_PATH}/build/front/"
